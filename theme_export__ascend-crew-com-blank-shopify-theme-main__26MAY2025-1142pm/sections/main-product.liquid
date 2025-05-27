@@ -1,0 +1,1102 @@
+<!-- Product Page Layout -->
+<div class="product-page-container">
+  
+  <!-- Product Image Gallery -->
+  <div class="product-gallery">
+    {% if product.media.size > 0 %}
+      <div class="gallery-grid" id="gallery-grid">
+        {% for media in product.media %}
+          {% if media.media_type == 'image' %}
+            <div class="gallery-image-item" data-zoom-image="{{ media | img_url: '2000x2000' }}">
+              <img src="{{ media | img_url: '1200x1200' }}" 
+                   alt="{{ product.title }}" 
+                   loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                   class="zoomable-image">
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+    {% else %}
+      <div class="gallery-grid">
+        <div class="gallery-image-item">
+          <div class="no-image-placeholder">
+            <span>No Image Available</span>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+  
+  <!-- Product Details Section -->
+  <div class="product-details-section">
+    <div class="product-info-container">
+      
+      <!-- Product Title and Price -->
+      <div class="product-header">
+        <h1 class="product-page-title">{{ product.title }}</h1>
+        <div class="product-page-price">
+          {% if product.compare_at_price > product.price %}
+            <span class="price-sale">{{ product.price | money_without_trailing_zeros }}</span>
+            <span class="price-compare">{{ product.compare_at_price | money_without_trailing_zeros }}</span>
+          {% else %}
+            <span class="price-regular">{{ product.price | money_without_trailing_zeros }}</span>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- Product Description -->
+      <div class="product-description">
+        {% if product.description != blank %}
+          <div class="description-content">
+            {{ product.description }}
+          </div>
+        {% else %}
+          <div class="description-content">
+            <p>No description available for this product.</p>
+          </div>
+        {% endif %}
+      </div>
+      
+      <!-- Size Selection -->
+      <div class="product-size-selection">
+        <h3 class="size-label">Size</h3>
+        <div class="product-page-sizes">
+          {% for variant in product.variants %}
+            <span class="product-page-size-option {% unless variant.available %}size-unavailable{% endunless %}" 
+                  data-variant-id="{{ variant.id }}" 
+                  data-available="{{ variant.available }}">
+              {{ variant.title }}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+      
+      <!-- Add to Cart Section -->
+      <div class="product-add-to-cart-section">
+        <button class="product-page-add-to-cart-btn" data-product-id="{{ product.id }}">
+          ADD TO CART
+        </button>
+      </div>
+      
+      <!-- Placeholder for future content -->
+      <div class="product-details-placeholder">
+        <p>Additional details can go here</p>
+      </div>
+      
+    </div>
+  </div>
+  
+</div>
+
+<!-- Image Zoom Modal -->
+<div class="zoom-modal" id="zoom-modal">
+  <div class="zoom-overlay"></div>
+  <button class="zoom-close" id="zoom-close">&times;</button>
+  <div class="zoom-container">
+    <!-- Images will be populated by JavaScript -->
+  </div>
+</div>
+
+<style>
+  /* Product Page Container */
+  .product-page-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Images take 2/3, details take 1/3 */
+    min-height: 100vh;
+    max-width: 100vw;
+    margin: 0;
+    padding: 2rem 1rem; /* Same padding as index page */
+    gap: 2rem; /* Gap between image and details */
+    box-sizing: border-box;
+  }
+  
+  /* Product Gallery */
+  .product-gallery {
+    width: 100%;
+    height: auto;
+  }
+  
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two columns side by side */
+    gap: 1rem;
+    width: 100%;
+    height: auto;
+  }
+  
+  .gallery-image-item {
+    width: 100%;
+    height: 100vh; /* Each image takes full viewport height */
+    background: #f5f5f5;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .gallery-image-item img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+  }
+  
+  /* Only show zoom cursor on desktop */
+  @media screen and (min-width: 1025px) {
+    .gallery-image-item {
+      cursor: zoom-in; /* Show zoom cursor only on desktop */
+    }
+    
+    .gallery-image-item:hover {
+      opacity: 0.9; /* Slight hover effect only on desktop */
+    }
+    
+    .zoomable-image {
+      cursor: zoom-in;
+    }
+  }
+
+  * {
+  box-shadow: none !important;
+  border-left: none !important;
+}
+  
+  .no-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e8e8e8;
+    color: #999;
+    font-family: var(--font-family);
+    font-size: 1.2rem;
+  }
+  
+  /* Zoom Modal Styles - Desktop Only */
+  @media screen and (min-width: 1025px) {
+    .zoom-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    .zoom-modal.active {
+      display: block;
+      opacity: 1;
+    }
+    
+    .zoom-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: zoom-out;
+    }
+    
+    .zoom-container {
+      position: relative;
+      width: 100%;
+      max-width: 95vw; /* Much larger - use almost full screen width */
+      margin: 0 auto;
+      padding: 60px 10px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      z-index: 10000;
+    }
+    
+    .zoom-image {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      min-height: 90vh; /* Make images much taller */
+      object-fit: contain;
+      border-radius: 4px;
+      margin-bottom: 0;
+      display: block;
+    }
+    
+    .zoom-close {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      color: #000;
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 10001;
+      padding: 8px 12px;
+      line-height: 1;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .zoom-close:hover {
+      background: rgba(255, 255, 255, 1);
+    }
+  }
+  
+  /* Hide zoom completely on mobile/tablet */
+  @media screen and (max-width: 1024px) {
+    .zoom-modal {
+      display: none !important;
+    }
+  }
+  
+  /* Product Details Section */
+  .product-details-section {
+    width: 100%;
+    height: 100vh;
+    padding: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    background: white;
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+  }
+  
+  .product-info-container {
+    width: 100%;
+    height: auto;
+    padding: 2rem;
+    padding-top: 4rem; /* Space for site header */
+    max-width: 400px;
+  }
+  
+  /* Product Header - Title and Price */
+  .product-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  
+  /* Product Description */
+  .product-description {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .description-content {
+    font-family: var(--font-family);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: #333;
+  }
+  
+  .description-content p {
+    margin: 0 0 0.75rem 0;
+  }
+  
+  .description-content p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .description-content ul,
+  .description-content ol {
+    margin: 0 0 0.75rem 1rem;
+    padding: 0;
+  }
+  
+  .description-content li {
+    margin-bottom: 0.25rem;
+  }
+  
+  .product-page-title {
+    font-family: var(--font-family);
+    font-weight: 700;
+    font-size: 0.75rem; /* Made smaller from 1rem */
+    color: #000;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  
+  .product-page-price {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin: 0;
+  }
+  
+  .price-regular,
+  .price-sale {
+    font-family: var(--font-family);
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: #000;
+    margin: 0;
+  }
+  
+  .price-sale {
+    color: #dc3545; /* Red color for sale price */
+  }
+  
+  .price-compare {
+    font-family: var(--font-family);
+    font-weight: 300;
+    font-size: 0.625rem;
+    color: #999;
+    text-decoration: line-through;
+    margin: 0;
+  }
+  
+  /* Size Selection */
+  .product-size-selection {
+    margin-bottom: 1.5rem;
+  }
+  
+  .size-label {
+    font-family: var(--font-family);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #000;
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .product-page-sizes {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .product-page-size-option {
+    font-size: 0.8rem;
+    font-family: var(--font-family);
+    color: #333;
+    font-weight: 400;
+    cursor: pointer;
+    position: relative;
+    padding: 0.3rem 0.5rem;
+    transition: all 0.3s ease;
+    border-radius: 0.2rem;
+    flex-shrink: 0;
+    min-width: fit-content;
+  }
+  
+  /* Hover underline effect */
+  .product-page-size-option:hover::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #333;
+    transform: scaleX(1);
+  }
+  
+  .product-page-size-option::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #333;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+  
+  /* Selected state - full box */
+  .product-page-size-option.selected {
+    background-color: #333;
+    color: white;
+  }
+  
+  .product-page-size-option.selected::after {
+    display: none;
+  }
+  
+  /* Out of stock/unavailable sizes */
+  .product-page-size-option.size-unavailable {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+    text-decoration: line-through;
+  }
+  
+  .product-page-size-option.size-unavailable:hover::after {
+    display: none;
+  }
+  
+  .product-page-size-option.size-unavailable::after {
+    display: none;
+  }
+  
+  /* Error state for sizes */
+  .product-page-sizes.error .product-page-size-option {
+    border: 1px solid #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+  }
+  
+  .product-page-sizes.error .product-page-size-option.size-unavailable {
+    border: none;
+    background-color: #f5f5f5;
+  }
+  
+  /* Add to Cart Section */
+  .product-add-to-cart-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .product-page-add-to-cart-btn {
+    background-color: #000;
+    color: white;
+    border: 1px solid #000;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    font-family: var(--font-family);
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 0;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+  }
+  
+  .product-page-add-to-cart-btn:hover {
+    background-color: transparent;
+    color: #000;
+    border: 1px solid #000;
+    transform: translateY(-1px);
+  }
+  
+  .product-page-add-to-cart-btn:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    border: 1px solid #ddd;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  .product-page-add-to-cart-btn:disabled:hover {
+    background-color: #f5f5f5;
+    color: #999;
+    border: 1px solid #ddd;
+    transform: none;
+  }
+  
+  /* Sold out button state */
+  .product-page-add-to-cart-btn.sold-out {
+    background-color: #f5f5f5 !important;
+    color: #999 !important;
+    border: 1px solid #ddd !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+  }
+  
+  .product-page-add-to-cart-btn.sold-out:hover {
+    background-color: #f5f5f5 !important;
+    color: #999 !important;
+    border: 1px solid #ddd !important;
+    transform: none !important;
+  }
+  
+  /* Placeholder for future content */
+  .product-details-placeholder {
+    color: #999;
+    font-family: var(--font-family);
+    font-size: 1rem;
+    font-style: italic;
+  }
+  
+  /* Mobile Responsive - Updated with swipe gallery like reference */
+  @media screen and (max-width: 1024px) {
+    .product-page-container {
+      grid-template-columns: 1fr; /* Stack vertically on tablet and mobile */
+      min-height: auto;
+      padding: 1rem 0.5rem;
+      gap: 1rem;
+    }
+    
+    .product-gallery {
+      width: 100vw; /* Full viewport width */
+      margin-left: calc(-50vw + 50%); /* Center and extend to edges */
+      margin-right: calc(-50vw + 50%);
+    }
+    
+    .gallery-grid {
+      display: flex !important; /* Convert to horizontal scroll */
+      flex-wrap: nowrap !important;
+      gap: 0 !important;
+      overflow-x: auto !important;
+      scroll-snap-type: x mandatory !important;
+      scrollbar-width: none !important; /* Firefox */
+      -ms-overflow-style: none !important; /* IE/Edge */
+      width: 100% !important;
+    }
+    
+    /* Hide scrollbar for webkit browsers */
+    .gallery-grid::-webkit-scrollbar {
+      display: none !important;
+    }
+    
+    .gallery-image-item {
+      width: 100vw !important; /* Full viewport width */
+      height: 75vh !important; /* 3:4 aspect ratio like reference */
+      flex: 0 0 100vw !important; /* Don't shrink, fixed width */
+      scroll-snap-align: start !important;
+      margin: 0 !important;
+    }
+    
+    .gallery-image-item img {
+      max-width: 100% !important;
+      max-height: 100% !important;
+      width: auto !important;
+      height: auto !important;
+      object-fit: contain !important; /* Always show full image without cropping */
+      object-position: center !important;
+    }
+    
+    .product-details-section {
+      height: auto; /* Auto height instead of 100vh */
+      min-height: auto;
+      padding: 0;
+      position: relative; /* Remove sticky positioning */
+      top: auto;
+      overflow-y: visible;
+      background: white;
+    }
+    
+    .product-info-container {
+      padding: 1.5rem 1rem;
+      padding-top: 1.5rem; /* Reduce top padding */
+      max-width: none; /* Remove max-width constraint */
+    }
+    
+    .product-page-title {
+      font-size: 1.2rem; /* Larger on mobile for readability */
+    }
+    
+    .price-regular,
+    .price-sale {
+      font-size: 1rem; /* Larger on mobile */
+    }
+    
+    .price-compare {
+      font-size: 0.875rem;
+    }
+    
+    .size-label {
+      font-size: 1rem; /* Larger on mobile */
+    }
+    
+    .product-page-size-option {
+      font-size: 0.9rem; /* Larger on mobile */
+      padding: 0.5rem 0.75rem; /* More padding for easier tapping */
+    }
+    
+    .product-page-add-to-cart-btn {
+      padding: 1rem 1.5rem; /* More padding for easier tapping */
+      font-size: 1rem; /* Larger font */
+    }
+  }
+  
+  @media screen and (max-width: 600px) {
+    .product-page-container {
+      padding: 0.5rem 0;
+      gap: 0.75rem;
+    }
+    
+    .gallery-image-item {
+      height: 70vh !important; /* Slightly shorter on small screens */
+    }
+    
+    .product-info-container {
+      padding: 1rem 0.75rem;
+    }
+    
+    .product-header {
+      margin-bottom: 1rem;
+    }
+    
+    .product-page-title {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .price-regular,
+    .price-sale {
+      font-size: 0.95rem;
+    }
+    
+    .price-compare {
+      font-size: 0.8rem;
+    }
+    
+    .description-content {
+      font-size: 0.85rem; /* Larger description text on mobile */
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .product-page-container {
+      padding: 0.25rem 0;
+      gap: 0.5rem;
+    }
+    
+    .gallery-image-item {
+      height: 65vh !important; /* Adjust for very small screens */
+    }
+    
+    .product-info-container {
+      padding: 0.75rem 0.5rem;
+    }
+    
+    .product-page-title {
+      font-size: 1rem;
+    }
+    
+    .price-regular,
+    .price-sale {
+      font-size: 0.9rem;
+    }
+    
+    .price-compare {
+      font-size: 0.75rem;
+    }
+  }
+
+  /* Enhanced CSS for infinite scroll mobile gallery */
+  @media screen and (max-width: 1024px) {
+    .gallery-grid {
+      scroll-behavior: auto !important; /* Disable smooth scroll for instant jumps */
+    }
+    
+    /* Smooth scroll only when we want it */
+    .gallery-grid.smooth-scroll {
+      scroll-behavior: smooth !important;
+    }
+    
+    /* Hide scrollbar more aggressively */
+    .gallery-grid {
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .gallery-grid::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+    
+    /* Ensure cloned images maintain same styling */
+    .gallery-image-item.cloned-image {
+      width: 100vw !important;
+      height: 75vh !important;
+      flex: 0 0 100vw !important;
+      scroll-snap-align: start !important;
+    }
+    
+    .gallery-image-item.cloned-image img {
+      max-width: 100% !important;
+      max-height: 100% !important;
+      width: auto !important;
+      height: auto !important;
+      object-fit: contain !important;
+      object-position: center !important;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Product page loaded with infinite swipe gallery');
+    
+    // Add to Shopify cart function
+    function addToShopifyCart(variantId, quantity = 1, callback) {
+      const formData = new FormData();
+      formData.append('id', variantId);
+      formData.append('quantity', quantity);
+      
+      fetch('/cart/add.js', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Successfully added to cart:', data);
+        if (callback) callback(true, data);
+      })
+      .catch(error => {
+        console.error('Error adding to cart:', error);
+        if (callback) callback(false, error);
+      });
+    }
+    
+    // Size selection and add to cart functionality
+    const sizeOptions = document.querySelectorAll('.product-page-size-option');
+    const addToCartBtn = document.querySelector('.product-page-add-to-cart-btn');
+    
+    let selectedVariantId = null;
+    
+    // Check if all sizes are out of stock
+    function checkAllSizesOutOfStock() {
+      const availableSizes = Array.from(sizeOptions).filter(option => 
+        option.getAttribute('data-available') === 'true'
+      );
+      
+      if (availableSizes.length === 0) {
+        // All sizes are out of stock
+        addToCartBtn.disabled = true;
+        addToCartBtn.classList.add('sold-out');
+        addToCartBtn.textContent = 'SOLD OUT';
+        addToCartBtn.style.cursor = 'not-allowed';
+        return true;
+      }
+      return false;
+    }
+    
+    // Initialize - check if all sizes are out of stock on page load
+    const allSoldOut = checkAllSizesOutOfStock();
+    
+    // Size selection functionality
+    sizeOptions.forEach(option => {
+      option.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Don't proceed if all sizes are sold out
+        if (allSoldOut) return;
+        
+        // Check if size is available
+        const isAvailable = this.getAttribute('data-available') === 'true';
+        if (!isAvailable) {
+          return; // Don't allow selection of unavailable sizes
+        }
+        
+        // Remove selected class from siblings
+        sizeOptions.forEach(sibling => sibling.classList.remove('selected'));
+        
+        // Add selected class to clicked option
+        this.classList.add('selected');
+        
+        // Store selected variant ID
+        selectedVariantId = this.getAttribute('data-variant-id');
+        addToCartBtn.setAttribute('data-variant-id', selectedVariantId);
+        
+        console.log('Selected variant ID:', selectedVariantId);
+        
+        // Remove error state if present
+        const sizesContainer = this.parentElement;
+        sizesContainer.classList.remove('error');
+        
+        // Reset button text and state (only if not all sold out)
+        if (!allSoldOut) {
+          addToCartBtn.disabled = false;
+          addToCartBtn.classList.remove('sold-out');
+          addToCartBtn.textContent = 'ADD TO CART';
+          addToCartBtn.style.cursor = 'pointer';
+        }
+      });
+    });
+    
+    // Add to cart functionality
+    addToCartBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Don't proceed if all sizes are sold out
+      if (allSoldOut || this.disabled) {
+        return;
+      }
+      
+      const sizesContainer = document.querySelector('.product-page-sizes');
+      const hasSelectedSize = document.querySelector('.product-page-size-option.selected');
+      
+      // Check if a size is selected
+      if (!hasSelectedSize || !selectedVariantId) {
+        // Add error styling to sizes and change button text
+        sizesContainer.classList.add('error');
+        this.textContent = 'Select Size';
+        
+        // Remove error class after 3 seconds but keep button text until size is selected
+        setTimeout(() => {
+          sizesContainer.classList.remove('error');
+        }, 3000);
+        
+        return; // Don't proceed with add to cart
+      }
+      
+      const productId = this.getAttribute('data-product-id');
+      
+      // Disable button and show loading state
+      this.disabled = true;
+      this.textContent = 'Adding...';
+      
+      // Add to Shopify cart using real API
+      addToShopifyCart(selectedVariantId, 1, (success, response) => {
+        if (success) {
+          this.textContent = 'Added to Cart!';
+          // Update header cart count
+          if (window.updateCartCount) window.updateCartCount();
+          setTimeout(() => {
+            this.textContent = 'ADD TO CART';
+            this.disabled = false;
+            // Clear size selection
+            sizeOptions.forEach(option => option.classList.remove('selected'));
+            selectedVariantId = null;
+            this.removeAttribute('data-variant-id');
+          }, 2000);
+        } else {
+          this.textContent = 'Error - Try Again';
+          setTimeout(() => {
+            this.textContent = 'ADD TO CART';
+            this.disabled = false;
+          }, 2000);
+        }
+      });
+    });
+    
+    // Image Zoom Functionality - Desktop Only (screens > 1024px)
+    if (window.innerWidth > 1024) {
+      const zoomModal = document.getElementById('zoom-modal');
+      const zoomContainer = document.querySelector('.zoom-container');
+      const zoomClose = document.getElementById('zoom-close');
+      const zoomOverlay = document.querySelector('.zoom-overlay');
+      const zoomableImages = document.querySelectorAll('.gallery-image-item');
+      
+      let allImages = [];
+      
+      // Collect all images for the zoom gallery
+      zoomableImages.forEach((item, index) => {
+        const img = item.querySelector('img');
+        if (img && !item.querySelector('.no-image-placeholder')) {
+          allImages.push({
+            src: item.getAttribute('data-zoom-image') || img.src,
+            alt: img.alt,
+            index: index
+          });
+        }
+      });
+      
+      // Create all images in the zoom container
+      function createZoomGallery() {
+        zoomContainer.innerHTML = ''; // Clear existing content
+        
+        allImages.forEach((imageData, index) => {
+          const img = document.createElement('img');
+          img.className = 'zoom-image';
+          img.src = imageData.src;
+          img.alt = imageData.alt;
+          img.loading = index === 0 ? 'eager' : 'lazy'; // Load first image immediately
+          zoomContainer.appendChild(img);
+        });
+      }
+      
+      // Open zoom modal and scroll to specific image
+      function openZoom(imageIndex) {
+        if (allImages.length === 0) return;
+        
+        createZoomGallery();
+        zoomModal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        
+        // Scroll to the clicked image
+        setTimeout(() => {
+          const targetImage = zoomContainer.children[imageIndex];
+          if (targetImage) {
+            targetImage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+      }
+      
+      // Close zoom modal
+      function closeZoom() {
+        zoomModal.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+      }
+      
+      // Add click listeners to images (desktop only)
+      zoomableImages.forEach((item, index) => {
+        const img = item.querySelector('img');
+        if (img && !item.querySelector('.no-image-placeholder')) {
+          item.addEventListener('click', () => {
+            const imageArrayIndex = allImages.findIndex(imgData => imgData.index === index);
+            if (imageArrayIndex !== -1) {
+              openZoom(imageArrayIndex);
+            }
+          });
+        }
+      });
+      
+      // Close modal events
+      if (zoomClose) zoomClose.addEventListener('click', closeZoom);
+      if (zoomOverlay) zoomOverlay.addEventListener('click', closeZoom);
+      
+      // Keyboard navigation
+      document.addEventListener('keydown', function(e) {
+        if (!zoomModal.classList.contains('active')) return;
+        
+        if (e.key === 'Escape') {
+          closeZoom();
+        }
+      });
+    }
+    
+    // Mobile gallery functionality with infinite loop
+    function initMobileGallery() {
+      if (window.innerWidth <= 1024) {
+        const galleryGrid = document.getElementById('gallery-grid');
+        const originalImages = galleryGrid.querySelectorAll('.gallery-image-item:not(.cloned-image)');
+        
+        if (originalImages.length <= 1) {
+          return;
+        }
+        
+        // Remove any existing clones
+        const existingClones = galleryGrid.querySelectorAll('.cloned-image');
+        existingClones.forEach(clone => clone.remove());
+        
+        // Create infinite scroll by cloning images
+        const imageCount = originalImages.length;
+        
+        // Clone first image and append to end for seamless loop
+        const firstImageClone = originalImages[0].cloneNode(true);
+        firstImageClone.classList.add('cloned-image');
+        galleryGrid.appendChild(firstImageClone);
+        
+        // Clone last image and prepend to beginning for seamless loop
+        const lastImageClone = originalImages[imageCount - 1].cloneNode(true);
+        lastImageClone.classList.add('cloned-image');
+        galleryGrid.insertBefore(lastImageClone, originalImages[0]);
+        
+        // Set initial scroll position to first real image (skip the prepended clone)
+        const itemWidth = galleryGrid.offsetWidth;
+        galleryGrid.scrollLeft = itemWidth;
+        
+        let isScrolling = false;
+        let scrollTimeout;
+        
+        // Handle infinite scroll on scroll end
+        galleryGrid.addEventListener('scroll', () => {
+          // Clear existing timeout
+          clearTimeout(scrollTimeout);
+          
+          // Set flag that we're scrolling
+          isScrolling = true;
+          
+          // Set timeout to handle infinite loop after scrolling stops
+          scrollTimeout = setTimeout(() => {
+            const currentScrollPos = galleryGrid.scrollLeft;
+            const currentIndex = Math.round(currentScrollPos / itemWidth);
+            
+            // Handle infinite loop transitions
+            if (currentIndex === 0) {
+              // Scrolled to cloned last image at beginning
+              // Jump to real last image without animation
+              galleryGrid.scrollLeft = imageCount * itemWidth;
+            } else if (currentIndex === imageCount + 1) {
+              // Scrolled to cloned first image at end
+              // Jump to real first image without animation
+              galleryGrid.scrollLeft = itemWidth;
+            }
+            
+            isScrolling = false;
+          }, 150); // Small delay to ensure scroll has ended
+        });
+        
+        // Handle touch/swipe gestures for better mobile experience
+        let startX = 0;
+        let startTime = 0;
+        let isPointerDown = false;
+        
+        galleryGrid.addEventListener('touchstart', (e) => {
+          startX = e.touches[0].clientX;
+          startTime = Date.now();
+          isPointerDown = true;
+        }, { passive: true });
+        
+        galleryGrid.addEventListener('touchmove', (e) => {
+          if (!isPointerDown) return;
+          
+          const currentX = e.touches[0].clientX;
+          const deltaX = startX - currentX;
+          
+          // Add some resistance/smoothness to the scroll
+          if (Math.abs(deltaX) > 5) {
+            e.preventDefault();
+          }
+        }, { passive: false });
+        
+        galleryGrid.addEventListener('touchend', (e) => {
+          if (!isPointerDown) return;
+          
+          const endTime = Date.now();
+          const timeDiff = endTime - startTime;
+          const endX = e.changedTouches[0].clientX;
+          const deltaX = startX - endX;
+          
+          isPointerDown = false;
+          
+          // Check for quick swipe (less than 300ms and more than 50px)
+          if (timeDiff < 300 && Math.abs(deltaX) > 50) {
+            const scrollPos = galleryGrid.scrollLeft;
+            const currentIndex = Math.round(scrollPos / itemWidth);
+            
+            if (deltaX > 0) {
+              // Swipe left - go to next image
+              galleryGrid.scrollTo({
+                left: (currentIndex + 1) * itemWidth,
+                behavior: 'smooth'
+              });
+            } else {
+              // Swipe right - go to previous image
+              galleryGrid.scrollTo({
+                left: (currentIndex - 1) * itemWidth,
+                behavior: 'smooth'
+              });
+            }
+          }
+        }, { passive: true });
+        
+      } else {
+        // Desktop: Remove cloned images
+        const clonedImages = document.querySelectorAll('.cloned-image');
+        clonedImages.forEach(img => img.remove());
+      }
+    }
+    
+    // Initialize mobile gallery
+    initMobileGallery();
+    
+    // Re-initialize on window resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        initMobileGallery();
+      }, 250);
+    });
+  });
+</script>

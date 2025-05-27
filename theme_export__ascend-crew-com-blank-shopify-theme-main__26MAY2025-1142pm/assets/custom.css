@@ -1,0 +1,110 @@
+/* Custom CSS for ASCEND CREW */
+
+/* Regular Helvetica for body text */
+@font-face {
+  font-family: 'Helvetica';
+  src: url('Helvetica.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Black Helvetica for bold/headings */
+@font-face {
+  font-family: 'Helvetica';
+  src: url('Helvetica-Black.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* CSS Variables */
+:root {
+  --font-family: 'Helvetica', 'Helvetica Neue', Arial, sans-serif;
+  --color-text: #000;
+  --color-bg: #fff;
+  --header-height: 60px;
+  --container-max-width: 1400px;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--color-text);
+  background: var(--color-bg);
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* Typography - Regular weight for body, bold weight for headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family);
+  font-weight: 700; /* This will use Helvetica-Black */
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
+}
+
+p, span, div, a {
+  font-family: var(--font-family);
+  font-weight: 400; /* This will use regular Helvetica */
+}
+
+/* Links */
+a {
+  color: var(--color-text);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+/* Main content padding for fixed header */
+.main-content {
+  padding-top: var(--header-height);
+}
+
+/* Container */
+.container {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Global Buttons */
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-text);
+  color: var(--color-bg);
+  border: none;
+  font-family: var(--font-family);
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #333;
+  color: white;
+}
+
+/* Global responsive */
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+  
+  html {
+    font-size: 14px;
+  }
+}

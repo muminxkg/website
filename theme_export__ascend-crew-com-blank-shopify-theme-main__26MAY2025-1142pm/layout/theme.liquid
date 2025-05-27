@@ -1,0 +1,71 @@
+<!doctype html>
+<html class="no-js" lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="">
+    <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    
+    <!-- Preload fonts for better performance -->
+    <link rel="preload" href="{{ 'Helvetica.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'Helvetica-Black.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    
+    <title>
+      {{ page_title }}
+      {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
+      {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+    </title>
+    {% if page_description %}
+      <meta name="description" content="{{ page_description | escape }}">
+    {% endif %}
+    {% render 'meta-tags' %}
+    
+    <!-- Header spacing CSS -->
+    <style>
+      :root {
+        --header-height: 70px; /* Adjust this to match your actual header height */
+      }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        /* Remove padding-top to have content start right under header */
+      }
+      
+      /* Add padding only to pages that need it, excluding cart */
+      main:not(.cart-page) {
+        padding-top: var(--header-height);
+      }
+      
+      main {
+        min-height: calc(100vh - var(--header-height));
+      }
+      
+      /* Ensure no margin on body that could interfere */
+      * {
+        box-sizing: border-box;
+      }
+    </style>
+    
+    <!-- Your custom CSS -->
+    {{ 'custom.css' | asset_url | stylesheet_tag }}
+    
+    
+    {{ content_for_header }}
+  </head>
+  <body>
+    
+    <!-- Include header -->
+    {% render 'header' %}
+    
+    <!-- Include search overlay -->
+    {% section 'main-search' %}
+    
+    <main role="main" tabindex="-1" {% if template contains 'cart' %}class="cart-page"{% endif %}>
+      {{ content_for_layout }}
+    </main>
+  </body>
+</html>

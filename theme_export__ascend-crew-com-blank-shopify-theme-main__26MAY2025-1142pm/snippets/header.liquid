@@ -1,0 +1,1272 @@
+<!-- Updated HTML Structure -->
+<header class="site-header">
+  <!-- Left side: MENU button -->
+  <div class="header-left">
+    <button class="menu-button" id="menuButton">
+      <div class="menu-icon">
+        <span class="menu-line"></span>
+        <span class="menu-line"></span>
+      </div>
+    </button>
+  </div>
+  
+  <!-- Right side: SEARCH and CART buttons -->
+  <div class="header-right">
+    <button class="search-button" id="searchButton">
+      <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+    </button>
+    <a href="{{ routes.cart_url }}" class="cart-button" id="cartButton">
+      <div class="cart-icon-container">
+        <svg class="cart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="m16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+        <span class="cart-count">{{ cart.item_count }}</span>
+      </div>
+    </a>
+  </div>
+</header>
+
+<!-- Search Overlay -->
+<div class="search-overlay" id="searchOverlay"></div>
+
+<!-- Search Panel -->
+<div class="search-panel" id="searchPanel">
+  <div class="search-panel-header">
+    <!-- Search header will contain moved buttons on mobile -->
+    <div class="search-header-left">
+      <!-- Menu button will be moved here on mobile -->
+    </div>
+    <div class="search-header-right">
+      <!-- Search and cart buttons will be moved here on mobile -->
+    </div>
+  </div>
+  <div class="search-header">
+    <form action="/search" method="get" role="search" class="search-form">
+      <div class="search-input-container">
+        <input
+          type="search"
+          name="q"
+          placeholder="SEARCH FOR..."
+          aria-label="Search"
+          autocomplete="off"
+          class="search-input"
+          id="searchInput"
+        />
+        <button type="button" class="search-submit" aria-label="Clear search or close" id="searchAction">×</button>
+      </div>
+    </form>
+  </div>
+  <div class="search-content">
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<!-- Menu Overlay (for mobile) -->
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<!-- Menu Panel -->
+<div class="menu-panel" id="menuPanel">
+  
+  <!-- Menu Header -->
+  <div class="menu-header">
+    <div class="menu-header-left"></div>
+    <div class="menu-header-icons">
+      <!-- Search and cart buttons will be moved here on mobile -->
+    </div>
+  </div>
+  
+  <!-- Menu Content -->
+  <div class="menu-content">
+    
+    <!-- Main Navigation -->
+    <nav class="menu-navigation">
+      <div class="nav-item">
+        <a href="{{ routes.root_url }}" class="nav-link">SHOP</a>
+      </div>
+      <div class="nav-item">
+        <a href="/pages/about" class="nav-link">ABOUT</a>
+      </div>
+    </nav>
+    
+    <!-- Menu Footer -->
+    <div class="menu-footer">
+      
+      <!-- Newsletter -->
+      <div class="newsletter-section">
+        <form class="newsletter-form">
+          <input type="email" placeholder="Enter your email" class="newsletter-input">
+          <button type="submit" class="newsletter-btn">Subscribe</button>
+        </form>
+      </div>
+      
+      <!-- Footer Links -->
+      <div class="footer-links">
+        <a href="/pages/client-services" class="footer-link">Client Services</a>
+        <a href="/pages/privacy-policy" class="footer-link">Privacy Policy</a>
+        <a href="#" class="footer-link">Instagram</a>
+      </div>
+      
+      <!-- Copyright -->
+      <div class="copyright">
+        © 2025 Ascend Crew
+      </div>
+      
+    </div>
+    
+  </div>
+  
+</div>
+
+<style>
+  /* Global no-select for entire page */
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Header Layout */
+  .site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1002;
+    background: white;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    border-bottom: 1px solid #eee;
+    transition: all 0.5s ease;
+  }
+  
+  /* Header when menu is open */
+  .site-header.menu-open {
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition: all 0.15s ease-out;
+  }
+
+  /* Header when search is open - NEW */
+  .site-header.search-open {
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition: all 0.15s ease-out;
+    z-index: 999;
+  }
+  
+  /* Left side - MENU */
+  .header-left {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 0;
+  }
+  
+  .menu-button {
+    background: none;
+    border: none;
+    font-family: var(--font-family);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: color 0.15s ease-out;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1060;
+    margin-left: -4px;
+  }
+  
+  .menu-button:hover {
+    color: #666;
+  }
+  
+  /* Menu icon container */
+  .menu-icon {
+    width: 20px;
+    height: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Menu lines */
+  .menu-line {
+    width: 100%;
+    height: 2px;
+    background-color: currentColor;
+    transition: all 0.15s ease-out;
+    transform-origin: center;
+    position: absolute;
+    top: 50%;
+    left: 0;
+  }
+  
+  .menu-line:first-child {
+    transform: translateY(-3px);
+  }
+  
+  .menu-line:last-child {
+    transform: translateY(3px);
+  }
+  
+  /* X state when menu is open */
+  .menu-button.open .menu-line:first-child {
+    transform: translateY(0) rotate(45deg);
+  }
+  
+  .menu-button.open .menu-line:last-child {
+    transform: translateY(0) rotate(-45deg);
+  }
+  
+  /* Menu button when in menu or search */
+  .menu-button.in-menu,
+  .menu-button.in-search {
+    color: white;
+  }
+  
+  .menu-button.in-menu:hover,
+  .menu-button.in-search:hover {
+    color: #ccc;
+  }
+  
+  /* Right side - SEARCH and CART */
+  .header-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    padding-right: 0;
+  }
+  
+  /* Search button */
+  .search-button {
+    position: relative;
+    z-index: 1060;
+    background: none;
+    border: none;
+    font-family: var(--font-family);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+  }
+  
+  .search-button:hover {
+    color: #666;
+  }
+  
+  /* Search icon */
+  .search-icon {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    transition: transform 0.2s ease;
+  }
+  
+  .search-button:hover .search-icon {
+    transform: scale(1.05);
+  }
+  
+  /* Search button when moved to menu or search */
+  .search-button.in-menu,
+  .search-button.in-search {
+    color: white;
+  }
+  
+  .search-button.in-menu:hover,
+  .search-button.in-search:hover {
+    color: #ccc;
+  }
+  
+  .cart-button {
+    position: relative;
+    z-index: 1060;
+    display: flex;
+    align-items: center;
+    font-family: var(--font-family);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-text);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    margin-right: 8px;
+  }
+  
+  .cart-button:hover {
+    color: #666;
+  }
+  
+  /* Cart icon container */
+  .cart-icon-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Cart icon */
+  .cart-icon {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    transition: transform 0.2s ease;
+  }
+  
+  .cart-button:hover .cart-icon {
+    transform: scale(1.05);
+  }
+  
+  /* Cart button when moved to menu or search */
+  .cart-button.in-menu,
+  .cart-button.in-search {
+    color: white;
+    font-size: 1rem;
+  }
+  
+  .cart-button.in-menu:hover,
+  .cart-button.in-search:hover {
+    color: #ccc;
+  }
+  
+  /* Cart count styling */
+  .cart-count {
+    position: absolute;
+    top: -2px;
+    right: -6px;
+    background: none;
+    color: currentColor;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+  
+  .cart-button.in-menu .cart-count,
+  .cart-button.in-search .cart-count {
+    color: white;
+  }
+  
+  .cart-count.updating {
+    transform: scale(1.2);
+  }
+
+  /* Search Overlay */
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+  
+  .search-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  
+  /* Search Panel - Updated with menu background */
+  .search-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(42, 42, 42, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 1051;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(-100%);
+    transition: transform 0.25s ease;
+    color: white;
+  }
+  
+  .search-panel.active {
+    transform: translateY(0);
+  }
+  
+  /* Search Panel Header - Space matching main header with button containers - UPDATED */
+  .search-panel-header {
+    position: relative;
+    width: 100%;
+    height: var(--header-height);
+    border-bottom: 1px solid #444;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+  }
+
+  /* Search header containers - NEW */
+  .search-header-left {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 0;
+  }
+
+  .search-header-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    padding-right: 0;
+  }
+  
+  /* Search Header - Section with search bar (moved down) */
+  .search-header {
+    position: relative;
+    width: 100%;
+    padding: 2rem;
+    border-bottom: 1px solid #444;
+    flex-shrink: 0;
+  }
+  
+  /* Search Form */
+  .search-form {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Search Input Container - Single row with input and X */
+  .search-input-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+  }
+  
+  /* Search Input - With placeholder inside, invisible box */
+  .search-input {
+    flex: 1;
+    background: none;
+    border: none;
+    border-bottom: none;
+    font-family: var(--font-family);
+    font-size: 16px; /* Fixed at 16px to prevent zoom on iOS */
+    font-weight: 400;
+    color: white;
+    padding: 0.8rem 3rem 0.8rem 0;
+    outline: none;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+    /* Additional properties to prevent zoom */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0;
+    zoom: 1;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  
+  .search-input:focus {
+    outline: none;
+    font-size: 16px; /* Maintain 16px on focus */
+  }
+  
+  .search-input::placeholder {
+    color: #999;
+    letter-spacing: 2px;
+    font-weight: 400;
+    text-transform: uppercase;
+    font-size: 16px; /* Ensure placeholder is also 16px */
+  }
+  
+  /* Search Submit - X button positioned over input */
+  .search-submit {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    font-weight: 300;
+  }
+  
+  .search-submit:hover {
+    color: #ccc;
+  }
+  
+  /* Search Content - Results area */
+  .search-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+  
+  .search-results {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .search-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+  
+  .search-result-item {
+    text-decoration: none;
+    color: white;
+    transition: opacity 0.2s ease;
+  }
+  
+  .search-result-item:hover {
+    opacity: 0.7;
+  }
+  
+  .search-result-image {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #333;
+    margin-bottom: 0.5rem;
+    object-fit: cover;
+  }
+  
+  .search-result-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: white;
+  }
+  
+  .search-result-price {
+    font-size: 0.8rem;
+    color: #ccc;
+  }
+  
+  .search-no-results {
+    text-align: center;
+    color: #ccc;
+    font-size: 1rem;
+    margin-top: 2rem;
+  }
+
+  /* Menu Overlay (dark background for mobile only) */
+  .menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.15s ease-out;
+    display: none;
+  }
+  
+  .menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Menu Panel */
+  .menu-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 400px;
+    height: 100vh;
+    background: rgba(42, 42, 42, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-family);
+    transform: translateX(-100%);
+    transition: transform 0.15s ease 0.12s;
+  }
+  
+  .menu-panel.active {
+    transform: translateX(0);
+  }
+  
+  /* Menu Header */
+  .menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1.5rem;
+    height: var(--header-height);
+    border-bottom: 1px solid #444;
+  }
+  
+  /* Menu header left side for animated button */
+  .menu-header-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Menu header icons container */
+  .menu-header-icons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  /* Menu Content */
+  .menu-content {
+    flex: 1;
+    padding: 0 1.5rem 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-y: auto;
+  }
+  
+  /* Menu Navigation */
+  .menu-navigation {
+    display: flex;
+    flex-direction: column;
+    margin-top: 2rem;
+  }
+  
+  .nav-item {
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -1.5rem;
+    right: -1.5rem;
+    bottom: 0;
+    border: 2px solid white;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+  
+  .nav-item:hover::before {
+    opacity: 1;
+    transform: scale(1);
+  }
+  
+  .nav-link {
+    display: block;
+    text-decoration: none;
+    color: white;
+    font-family: var(--font-family);
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 1rem 0;
+    transition: color 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  /* Menu Footer */
+  .menu-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: -3rem;
+  }
+  
+  /* Newsletter Section */
+  .newsletter-section {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .newsletter-form {
+    display: flex;
+    border-bottom: 1px solid #555;
+    padding-bottom: 0.5rem;
+  }
+  
+  /* Newsletter input - allow text selection for typing */
+  .newsletter-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-family: var(--font-family);
+    outline: none;
+    padding: 0.5rem 0;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+  
+  .newsletter-input::placeholder {
+    color: #999;
+  }
+  
+  .newsletter-btn {
+    background: transparent;
+    color: white;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 400;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+  }
+  
+  .newsletter-btn:hover {
+    color: #ccc;
+  }
+  
+  /* Footer Links */
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .footer-link {
+    font-size: 0.9rem;
+    color: #ccc;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .footer-link:hover {
+    color: white;
+  }
+  
+  /* Copyright */
+  .copyright {
+    font-size: 0.8rem;
+    color: #999;
+    text-align: left;
+    padding-top: 2rem;
+    border-top: 1px solid #444;
+  }
+  
+  /* Mobile Responsive */
+  @media screen and (max-width: 768px) {
+    .site-header {
+      padding: 0 1rem;
+    }
+    
+    .menu-button {
+      font-size: 0.9rem;
+    }
+    
+    /* Show overlay only on mobile */
+    .menu-overlay {
+      display: block;
+      z-index: 1002;
+    }
+    
+    /* Full screen menu on mobile */
+    .menu-panel {
+      width: 100vw;
+      z-index: 1003;
+    }
+    
+    /* Mobile menu header layout */
+    .menu-header {
+      justify-content: space-between;
+      padding: 0 1rem;
+    }
+    
+    /* Change button colors when menu is open on mobile */
+    .site-header.menu-open .search-button,
+    .site-header.menu-open .cart-button {
+      color: white;
+    }
+    
+    .site-header.menu-open .search-button:hover,
+    .site-header.menu-open .cart-button:hover {
+      color: #ccc;
+    }
+
+    /* Change button colors when search is open on mobile - NEW */
+    .site-header.search-open .menu-button,
+    .site-header.search-open .search-button,
+    .site-header.search-open .cart-button {
+      color: white;
+    }
+    
+    .site-header.search-open .menu-button:hover,
+    .site-header.search-open .search-button:hover,
+    .site-header.search-open .cart-button:hover {
+      color: #ccc;
+    }
+
+    /* Mobile search panel header layout - NEW */
+    .search-panel-header {
+      padding: 0 1rem;
+    }
+    
+    .menu-content {
+      padding: 0 1rem 1.5rem 1rem;
+    }
+    
+    .menu-navigation {
+      margin-top: 1rem;
+    }
+    
+    /* Remove hover effects on mobile */
+    .nav-item::before {
+      display: none;
+    }
+    
+    .nav-item:hover::before {
+      display: none;
+    }
+    
+    .nav-link {
+      font-size: 1.2rem;
+    }
+    
+    .newsletter-input {
+      font-size: 16px;
+    }
+    
+    /* Search mobile adjustments */
+    .search-header {
+      padding: 1.5rem 1rem;
+    }
+    
+    .search-content {
+      padding: 1rem;
+    }
+    
+    .search-input {
+      font-size: 1.1rem;
+    }
+    
+    .search-results-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .menu-header {
+      padding: 0 1rem;
+    }
+    
+    .menu-content {
+      padding: 0 1rem 1rem 1rem;
+    }
+    
+    .nav-link {
+      font-size: 1.1rem;
+      padding: 1.2rem 0;
+    }
+    
+    .search-results-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const menuButton = document.getElementById('menuButton');
+    const menuPanel = document.getElementById('menuPanel');
+    const menuOverlay = document.getElementById('menuOverlay');
+    const searchButton = document.getElementById('searchButton');
+    const searchOverlay = document.getElementById('searchOverlay');
+    const searchClose = document.getElementById('searchClose');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const searchActionButton = document.getElementById('searchAction');
+    const cartButton = document.getElementById('cartButton');
+    const menuHeaderIcons = document.querySelector('.menu-header-icons');
+    const headerRight = document.querySelector('.header-right');
+    const siteHeader = document.querySelector('.site-header');
+    const menuHeaderLeft = document.querySelector('.menu-header-left');
+    
+    // NEW: Search panel header containers
+    const searchHeaderLeft = document.querySelector('.search-header-left');
+    const searchHeaderRight = document.querySelector('.search-header-right');
+    
+    let searchTimeout;
+    
+    // Menu functionality
+    if (menuButton) {
+      menuButton.addEventListener('click', function() {
+        if (menuPanel.classList.contains('active')) {
+          closeMenu();
+        } else {
+          openMenu();
+        }
+      });
+    }
+    
+    // Search functionality
+    function openSearch() {
+      closeMenu(); // Close menu if open
+      document.getElementById('searchOverlay').classList.add('active');
+      document.getElementById('searchPanel').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // NEW: Move buttons to search header on mobile
+      if (window.innerWidth <= 768) {
+        moveButtonsToSearch();
+        siteHeader.classList.add('search-open');
+      }
+      
+      setTimeout(() => {
+        if (searchInput) searchInput.focus();
+      }, 100);
+    }
+    
+    function closeSearch() {
+      document.getElementById('searchOverlay').classList.remove('active');
+      document.getElementById('searchPanel').classList.remove('active');
+      document.body.style.overflow = '';
+      
+      // NEW: Move buttons back to header
+      if (window.innerWidth <= 768) {
+        moveButtonsToHeader();
+        siteHeader.classList.remove('search-open');
+      }
+      
+      if (searchInput) {
+        searchInput.value = '';
+        clearSearchResults();
+      }
+    }
+    
+    if (searchButton) {
+      searchButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        openSearch();
+      });
+    }
+    
+    if (searchClose) {
+      searchClose.addEventListener('click', function() {
+        closeSearch();
+      });
+    }
+    
+    // Smart X button functionality - clear text if present, otherwise close search
+    if (searchActionButton) {
+      searchActionButton.addEventListener('click', function() {
+        if (searchInput && searchInput.value.trim()) {
+          // If there's text, clear it and focus back
+          searchInput.value = '';
+          searchInput.focus();
+          clearSearchResults();
+        } else {
+          // If no text, close the search panel
+          closeSearch();
+        }
+      });
+    }
+    
+    // Close search on overlay click
+    if (document.getElementById('searchOverlay')) {
+      document.getElementById('searchOverlay').addEventListener('click', function() {
+        closeSearch();
+      });
+    }
+    
+    // Search input functionality
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length >= 2) {
+          searchTimeout = setTimeout(() => {
+            performSearch(query);
+          }, 300);
+        } else {
+          clearSearchResults();
+        }
+      });
+      
+      // Handle Enter key to submit search
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const query = this.value.trim();
+          if (query) {
+            // Navigate to search results page
+            window.location.href = `/search?q=${encodeURIComponent(query)}`;
+          }
+        }
+      });
+    }
+    
+    // Close menu when clicking overlay
+    if (menuOverlay) {
+      menuOverlay.addEventListener('click', function() {
+        closeMenu();
+      });
+    }
+    
+    // Close search/menu when pressing escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const searchOverlay = document.getElementById('searchOverlay');
+        if (searchOverlay && searchOverlay.classList.contains('active')) {
+          closeSearch();
+        } else if (menuPanel && menuPanel.classList.contains('active')) {
+          closeMenu();
+        }
+      }
+    });
+    
+    function closeMenu() {
+      menuPanel.classList.remove('active');
+      menuOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+      
+      menuButton.classList.remove('open');
+      menuButton.classList.remove('in-menu');
+      siteHeader.classList.remove('menu-open');
+      
+      // Move buttons back to header if they were moved
+      if (window.innerWidth <= 768) {
+        moveButtonsToHeader();
+      }
+    }
+    
+    function openMenu() {
+      // Close search if open
+      const searchOverlay = document.getElementById('searchOverlay');
+      if (searchOverlay && searchOverlay.classList.contains('active')) {
+        closeSearch();
+      }
+      
+      menuButton.classList.add('open');
+      menuButton.classList.add('in-menu');
+      siteHeader.classList.add('menu-open');
+      
+      menuPanel.classList.add('active');
+      
+      if (window.innerWidth <= 768) {
+        menuOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        moveButtonsToMenu();
+      }
+    }
+
+    // NEW: Function to move buttons to search header on mobile
+    function moveButtonsToSearch() {
+      if (window.innerWidth <= 768) {
+        // Move menu button to search header left
+        searchHeaderLeft.appendChild(menuButton);
+        menuButton.classList.add('in-search');
+        
+        // Move search and cart buttons to search header right
+        searchHeaderRight.appendChild(searchButton);
+        searchHeaderRight.appendChild(cartButton);
+        searchButton.classList.add('in-search');
+        cartButton.classList.add('in-search');
+      }
+    }
+
+    // NEW: Function to move buttons to menu header on mobilefunction moveButtonsToMenu() {
+function moveButtonsToMenu() {
+  if (window.innerWidth <= 768) {
+    // 1) send the hamburger/X into the menu header
+    menuHeaderLeft.appendChild(menuButton);
+    menuButton.classList.add('in-menu');
+    
+    // 2) then move search + cart as before
+    menuHeaderIcons.appendChild(searchButton);
+    menuHeaderIcons.appendChild(cartButton);
+    searchButton.classList.add('in-menu');
+    cartButton.classList.add('in-menu');
+  }
+}
+
+    // NEW: Function to move buttons back to main header
+    function moveButtonsToHeader() {
+      // Remove all positioning classes
+      menuButton.classList.remove('in-menu', 'in-search');
+      searchButton.classList.remove('in-menu', 'in-search');
+      cartButton.classList.remove('in-menu', 'in-search');
+      
+      // Move menu button back to header left
+      document.querySelector('.header-left').appendChild(menuButton);
+      
+      // Move search and cart buttons back to header right
+      headerRight.appendChild(searchButton);
+      headerRight.appendChild(cartButton);
+    }
+    
+    function performSearch(query) {
+      // Show loading state
+      searchResults.innerHTML = '<div class="search-no-results">Searching...</div>';
+      
+      // Shopify search API
+      fetch(`/search/suggest.json?q=${encodeURIComponent(query)}&resources[type]=product&resources[limit]=8`)
+        .then(response => response.json())
+        .then(data => {
+          displaySearchResults(data.resources.results.products || []);
+        })
+        .catch(error => {
+          console.error('Search error:', error);
+          searchResults.innerHTML = '<div class="search-no-results">Search temporarily unavailable</div>';
+        });
+    }
+    
+    function displaySearchResults(products) {
+      if (products.length === 0) {
+        searchResults.innerHTML = '<div class="search-no-results">No products found</div>';
+        return;
+      }
+      
+      const resultsHTML = `
+        <div class="search-results-grid">
+          ${products.map(product => `
+            <a href="${product.url}" class="search-result-item">
+              <img src="${product.featured_image || '/assets/placeholder.jpg'}" alt="${product.title}" class="search-result-image">
+              <div class="search-result-title">${product.title}</div>
+              <div class="search-result-price">${formatPrice(product.price)}</div>
+            </a>
+          `).join('')}
+        </div>
+      `;
+      
+      searchResults.innerHTML = resultsHTML;
+    }
+    
+    function clearSearchResults() {
+      searchResults.innerHTML = '';
+    }
+    
+    function formatPrice(price) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      }).format(price / 100);
+    }
+    
+    // Handle window resize - NEW: Updated to handle search state
+    window.addEventListener('resize', function() {
+      const searchPanel = document.getElementById('searchPanel');
+      const isSearchOpen = searchPanel && searchPanel.classList.contains('active');
+      const isMenuOpen = menuPanel && menuPanel.classList.contains('active');
+      
+      if (window.innerWidth > 768) {
+        // Desktop: move all buttons back to header
+        moveButtonsToHeader();
+        siteHeader.classList.remove('menu-open', 'search-open');
+      } else {
+        // Mobile: move buttons to appropriate locations
+        if (isSearchOpen) {
+          moveButtonsToSearch();
+          siteHeader.classList.add('search-open');
+        } else if (isMenuOpen) {
+          moveButtonsToMenu();
+          siteHeader.classList.add('menu-open');
+        }
+      }
+    });
+    
+    // Function to update cart count dynamically
+    function updateCartCount() {
+      fetch('/cart.js')
+        .then(response => response.json())
+        .then(cart => {
+          const cartCountElements = document.querySelectorAll('.cart-count');
+          cartCountElements.forEach(cartCountElement => {
+            const currentCount = parseInt(cartCountElement.textContent) || 0;
+            const newCount = cart.item_count || 0;
+            
+            if (currentCount !== newCount) {
+              cartCountElement.classList.add('updating');
+              cartCountElement.textContent = newCount;
+              
+              setTimeout(() => {
+                cartCountElement.classList.remove('updating');
+              }, 300);
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Error updating cart count:', error);
+        });
+    }
+    
+    // Listen for cart updates
+    window.addEventListener('cartUpdated', function() {
+      updateCartCount();
+    });
+    
+    window.updateCartCount = updateCartCount;
+    updateCartCount();
+    
+    // Newsletter form submission
+    const newsletterForm = document.querySelector('.newsletter-form');
+    if (newsletterForm) {
+      newsletterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const input = this.querySelector('.newsletter-input');
+        const button = this.querySelector('.newsletter-btn');
+        
+        if (input.value.trim()) {
+          input.placeholder = 'Thank You';
+          input.value = '';
+          input.disabled = true;
+          button.disabled = true;
+        }
+      });
+    }
+    
+    // Global functions for backwards compatibility
+    window.openMenu = openMenu;
+    window.closeMenu = closeMenu;
+  });
+</script>

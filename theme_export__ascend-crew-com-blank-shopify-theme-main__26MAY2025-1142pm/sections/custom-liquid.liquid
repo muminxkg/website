@@ -1,0 +1,25 @@
+{% comment %}
+  Custom Liquid Section
+  Allows adding custom Liquid, HTML, CSS, and JavaScript
+{% endcomment %}
+
+{{ section.settings.custom_liquid }}
+
+{% schema %}
+{
+  "name": "Custom Liquid",
+  "settings": [
+    {
+      "type": "liquid",
+      "id": "custom_liquid",
+      "label": "Custom Liquid",
+      "info": "Add custom Liquid, HTML, CSS, and JavaScript code here"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Liquid"
+    }
+  ]
+}
+{% endschema %}
